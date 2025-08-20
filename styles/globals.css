@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Soft abstract gradient background with subtle floating blobs */
+html, body, #__next {
+  height: 100%;
+}
+body {
+  @apply bg-white text-gray-800 dark:bg-[#0b0f17] dark:text-gray-100;
+}
+
+/* Floating gradient backdrop */
+.bg-abstract {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.bg-abstract::before, .bg-abstract::after {
+  content: "";
+  position: absolute;
+  width: 60vw;
+  height: 60vw;
+  filter: blur(80px);
+  opacity: 0.35;
+  z-index: -1;
+  border-radius: 9999px;
+}
+.bg-abstract::before {
+  left: -10vw;
+  top: -10vw;
+  background: radial-gradient(circle at center, #a78bfa 0%, #60a5fa 60%, transparent 70%);
+  animation: float 20s ease-in-out infinite;
+}
+.bg-abstract::after {
+  right: -10vw;
+  bottom: -10vw;
+  background: radial-gradient(circle at center, #34d399 0%, #fbbf24 60%, transparent 70%);
+  animation: float 18s ease-in-out infinite reverse;
+}
+
+/* Emoji link “glow” on hover (no underline) */
+.emoji-link {
+  text-decoration: none;
+  transition: filter 0.2s ease, transform 0.1s ease;
+}
+.emoji-link:hover {
+  filter: drop-shadow(0 0 10px rgba(99,102,241,0.8));
+  transform: scale(1.05);
+}
+
+/* “Floating” card look */
+.tile {
+  @apply bg-white/60 dark:bg-white/10 backdrop-blur rounded-2xl shadow-float p-4 border border-white/40 dark:border-white/5;
+}
+
+/* Sticky floating buttons container */
+.floating-buttons {
+  position: fixed;
+  inset: auto 16px 16px auto;
+  z-index: 50;
+}
+
+.floating-left {
+  position: fixed;
+  inset: auto auto 16px 16px;
+  z-index: 50;
+}
+
+/* Masked links should not show underline on emoji */
+a.no-underline {
+  text-decoration: none;
+}
