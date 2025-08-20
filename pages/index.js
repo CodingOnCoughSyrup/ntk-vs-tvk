@@ -110,7 +110,7 @@ export default function Home() {
             <div className="tile relative">
               <div className="absolute top-3 right-3 text-xl">🗣️</div>
               <div className="text-xs opacity-70">Speech Time (minutes)</div>
-              <div className="text-base font-semibold mt-1">Lifetime (from Nov 1, 2025)</div>
+              <div className="text-base font-semibold mt-1">Lifetime (from Nov 1, 2024)</div>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <div className="tile">
                   <div className="opacity-70 text-xs">NTK</div>
