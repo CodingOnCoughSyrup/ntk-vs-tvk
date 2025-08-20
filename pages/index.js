@@ -23,7 +23,7 @@ export default function Home() {
     return () => { active = false; };
   }, []);
 
-  const note = "Note: All data shown is from November 1, 2025 onward — it’s not entire lifetime. To save TVK from embarrassment.";
+  const note = "Note: All data shown is from November 1, 2024 onward — it’s not entire lifetime. It is after TVK's first politicial conference to save TVK from embarrassment.";
 
   const issuesPie = totals ? [
     { name: 'NTK', value: totals?.issues?.ntk ?? 0 },
