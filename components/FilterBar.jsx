@@ -24,7 +24,7 @@ export default function FilterBar({ onApply, onClear, disabled }) {
           onChange={e => setPreset(e.target.value)}
           disabled={disabled}
         >
-          <option value="all">Life Time (Default)</option>
+          <option value="all">Life Time (from Nov 1, 2024)</option>
           <option value="1m">Past month</option>
           <option value="3m">Past 3 months</option>
           <option value="6m">Past 6 months</option>

@@ -103,6 +103,29 @@ export default function IssuesPage() {
             </div>
             <MiniPie data={pieData} />
           </div>
+          
+          <div className="tile">
+            <div className="font-semibold mb-2">Quick View</div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left">
+                    <th className="py-2 pr-3 w-1/2"></th>
+                    <th className="py-2 px-3">NTK</th>
+                    <th className="py-2 px-3">TVK</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t border-black/5 dark:border-white/10">
+                    <td className="py-2 pr-3 font-medium">No of Issues</td>
+                    <td className="py-2 px-3">{counts.ntk}</td>
+                    <td className="py-2 px-3">{counts.tvk}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
 
         <div className="mt-4">
