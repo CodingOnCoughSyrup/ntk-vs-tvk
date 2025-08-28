@@ -16,6 +16,7 @@ export default function ConferencesPage() {
   const [asc, setAsc] = useState(false);
   const [modalA, setModalA] = useState(false);
   const [modalB, setModalB] = useState(false);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -77,6 +78,11 @@ export default function ConferencesPage() {
     setTimeout(() => setFiltering(false), 120);
   }
 
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter(r => (r.topic || '').toLowerCase().includes(q));
+  }, [rows, search]);
 
   // Comparison stats (filtered)
   const stats = useMemo(() => {
@@ -89,21 +95,25 @@ export default function ConferencesPage() {
   }, [rows]);
 
   // Carousels source
-  const ntkItems = useMemo(() => rows.filter(r => r.party === 'NTK').map(r => ({
+  const ntkItems = useMemo(() => filteredRows
+  .filter(r => r.party === 'NTK')
+  .map(r => ({
     id: r.id,
     dateDMY: r.dateDMY,
     ytUrl: r.ytUrl,
     label: r.topic || r.dateDMY,
-    extra: `${r.duration} m`
-  })), [rows]);
+    extra: `${r.duration} m`,
+  })), [filteredRows]);
 
-  const tvkItems = useMemo(() => rows.filter(r => r.party === 'TVK').map(r => ({
+const tvkItems = useMemo(() => filteredRows
+  .filter(r => r.party === 'TVK')
+  .map(r => ({
     id: r.id,
     dateDMY: r.dateDMY,
     ytUrl: r.ytUrl,
     label: r.topic || r.dateDMY,
-    extra: `${r.duration} m`
-  })), [rows]);
+    extra: `${r.duration} m`,
+  })), [filteredRows]);
 
   const pieCounts = [
     { name: 'NTK', value: stats.NTK.count },
