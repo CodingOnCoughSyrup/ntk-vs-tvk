@@ -1,6 +1,6 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
-const COLORS = ['#60a5fa', '#34d399'];
+const COLORS = ['#60a5fa', '#34d399', '#f59e0b'];
 
 export function MiniPie({ data = [], title, compact = false }) {
   const safe = Array.isArray(data) ? data : [];

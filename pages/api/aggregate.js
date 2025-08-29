@@ -25,16 +25,31 @@ export default async function handler(req, res) {
     const press = normalizePress(pressRaw.rows || []);
     const conference = normalizeConference(confRaw.rows || []);
 
+    // Derive combined categories
+    const issuesBoth = issues.filter(r => !!r.ntkUrl && !!r.tvkUrl).length;
+    const issuesNtkOnly = issues.filter(r => !!r.ntkUrl && !r.tvkUrl).length;
+    const issuesTvkOnly = issues.filter(r => !!r.tvkUrl && !r.ntkUrl).length;
+
+    const protestsBoth = protests.filter(r => !!r.ntkUrl && !!r.tvkUrl).length;
+    const protestsNtkOnly = protests.filter(r => !!r.ntkUrl && !r.tvkUrl).length;
+    const protestsTvkOnly = protests.filter(r => !!r.tvkUrl && !r.ntkUrl).length;
+
     const totals = {
       issues: {
         total: issues.length,
         ntk: issues.filter(r => !!r.ntkUrl).length,
         tvk: issues.filter(r => !!r.tvkUrl).length,
+        ntkOnly: issuesNtkOnly,
+        tvkOnly: issuesTvkOnly,
+        both: issuesBoth,
       },
       protests: {
         total: protests.length,
         ntk: protests.filter(r => !!r.ntkUrl).length,
         tvk: protests.filter(r => !!r.tvkUrl).length,
+        ntkOnly: protestsNtkOnly,
+        tvkOnly: protestsTvkOnly,
+        both: protestsBoth,
       },
       press: {
         total: press.length,
