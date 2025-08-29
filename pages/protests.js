@@ -51,7 +51,7 @@ export default function ProtestsPage() {
     let label = 'Showing: Life Time';
     if (fromD || toD) {
       const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-      label = `Showing: ${fromD ? fmt(fromD) : '…'} → ${toD ? fmt(toD) : '…'}`;
+      label = `Showing: ${fromD ? fmt(fromD) : '--'} to ${toD ? fmt(toD) : '--'}`;
     } else if (preset && preset !== 'all') {
       const map = { '1m':'Past month','3m':'Past 3 months','6m':'Past 6 months','1y':'Past year' };
       label = `Showing: ${map[preset] || 'Life Time'}`;
@@ -76,9 +76,23 @@ export default function ProtestsPage() {
     tvkSpeech: rows.reduce((a, r) => a + (r.tvkSpeech || 0), 0)
   }), [rows]);
 
+  // NTK Only / TVK Only / Both for Events pie
+  const categoryCounts = useMemo(() => {
+    let ntkOnly = 0, tvkOnly = 0, both = 0;
+    for (const r of rows) {
+      const hasN = !!r.ntkUrl;
+      const hasT = !!r.tvkUrl;
+      if (hasN && hasT) both++;
+      else if (hasN) ntkOnly++;
+      else if (hasT) tvkOnly++;
+    }
+    return { ntkOnly, tvkOnly, both };
+  }, [rows]);
+
   const pieTicks = [
-    { name: 'NTK', value: counts.ntk },
-    { name: 'TVK', value: counts.tvk }
+    { name: 'NTK Only', value: categoryCounts.ntkOnly },
+    { name: 'TVK Only', value: categoryCounts.tvkOnly },
+    { name: 'Both', value: categoryCounts.both }
   ];
   const pieSpeech = [
     { name: 'NTK', value: counts.ntkSpeech },
@@ -113,7 +127,7 @@ export default function ProtestsPage() {
         {/* Charts moved to bottom */}
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="tile">
-            <MiniPie title="NTK vs TVK (Events)" data={pieTicks} compact />
+            <MiniPie title="Events: NTK Only / TVK Only / Both" data={pieTicks} compact />
           </div>
 
           <div className="tile">
@@ -126,3 +140,4 @@ export default function ProtestsPage() {
     </div>
   );
 }
+

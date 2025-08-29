@@ -75,9 +75,23 @@ export default function IssuesPage() {
     return { ntk, tvk };
   }, [rows]);
 
+  // For chart: NTK Only, TVK Only, Both
+  const categoryCounts = useMemo(() => {
+    let ntkOnly = 0, tvkOnly = 0, both = 0;
+    for (const r of rows) {
+      const hasN = !!r.ntkUrl;
+      const hasT = !!r.tvkUrl;
+      if (hasN && hasT) both++;
+      else if (hasN) ntkOnly++;
+      else if (hasT) tvkOnly++;
+    }
+    return { ntkOnly, tvkOnly, both };
+  }, [rows]);
+
   const pieData = [
-    { name: 'NTK', value: counts.ntk },
-    { name: 'TVK', value: counts.tvk }
+    { name: 'NTK Only', value: categoryCounts.ntkOnly },
+    { name: 'TVK Only', value: categoryCounts.tvkOnly },
+    { name: 'Both', value: categoryCounts.both }
   ];
 
   return (
@@ -107,7 +121,7 @@ export default function IssuesPage() {
         {/* Charts + Quick View moved to bottom */}
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="tile">
-            <MiniPie title="NTK vs TVK (Addressed)" data={pieData} compact />
+            <MiniPie title="Issues Discussed: NTK Only / TVK Only / Both" data={pieData} compact />
           </div>
           <div className="tile">
             <div className="font-semibold mb-2">Quick View</div>

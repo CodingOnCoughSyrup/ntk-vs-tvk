@@ -17,6 +17,8 @@ export default function DataTable({
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  // Party filter for issues/protests: 'both' | 'ntk-only' | 'tvk-only'
+  const [party, setParty] = useState('both');
 
   // Responsive page size: smaller on mobile
   useEffect(() => {
@@ -41,7 +43,15 @@ export default function DataTable({
       data = data.filter(r => (r[searchableKey] || '').toLowerCase().includes(q));
     }
 
-    // Party toggle removed for protests to simplify UI
+    // Party filter (issues & protests)
+    if (kind === 'issues' || kind === 'protests') {
+      if (party === 'ntk-only') {
+        data = data.filter(r => !!r.ntkUrl && !r.tvkUrl);
+      } else if (party === 'tvk-only') {
+        data = data.filter(r => !!r.tvkUrl && !r.ntkUrl);
+      }
+      // 'both' shows all
+    }
 
     // Sort by date
     data.sort((a, b) => {
@@ -51,7 +61,7 @@ export default function DataTable({
     });
 
     return data;
-  }, [rows, search, sortDesc, kind]);
+  }, [rows, search, sortDesc, kind, party]);
 
   const totalPages = Math.max(1, Math.ceil(searched.length / pageSize));
   const paged = searched.slice((page - 1) * pageSize, page * pageSize);
@@ -79,7 +89,15 @@ export default function DataTable({
                   onClick={() => setSortDesc(s => !s)}>
             Sort: {sortDesc ? 'Newest → Oldest' : 'Oldest → Newest'}
           </button>
-          {/* Party toggle removed in protests */}
+          {(kind === 'issues' || kind === 'protests') && (
+            <button
+              className="px-3 py-2 rounded-lg bg-gray-200/70 dark:bg-white/10"
+              onClick={() => setParty(p => (p === 'both' ? 'ntk-only' : p === 'ntk-only' ? 'tvk-only' : 'both'))}
+              title="Toggle party filter"
+            >
+              Party: {party === 'both' ? 'Both' : party === 'ntk-only' ? 'NTK only' : 'TVK only'}
+            </button>
+          )}
         </div>
 
         {appliedLabel && (

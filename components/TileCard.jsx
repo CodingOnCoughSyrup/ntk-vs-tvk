@@ -1,4 +1,4 @@
-import { MiniPie } from './ChartsMini';
+﻿import { MiniPie } from './ChartsMini';
 
 export default function TileCard({
   icon,
@@ -6,9 +6,10 @@ export default function TileCard({
   bigNumber,
   subText,
   pieData,
-  compact = false,   // ✅ default value
+  compact = false,
+  pieTitle,
 }) {
-  const isCompact = Boolean(compact); // ✅ avoid bare `compact` in JSX
+  const isCompact = Boolean(compact);
 
   return (
     <div className="tile relative">
@@ -20,7 +21,7 @@ export default function TileCard({
           <div className={`opacity-80 ${isCompact ? 'text-[11px] md:text-xs' : 'text-sm'}`}>{subText}</div>
         )}
       </div>
-      {pieData && <MiniPie data={pieData} title="NTK vs TVK" compact={isCompact} />}
+      {pieData && <MiniPie data={pieData} title={pieTitle} compact={isCompact} />}
     </div>
   );
 }
