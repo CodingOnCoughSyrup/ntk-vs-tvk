@@ -17,6 +17,16 @@ export default function ConferencesPage() {
   const [modalA, setModalA] = useState(false);
   const [modalB, setModalB] = useState(false);
   const [search, setSearch] = useState('');
+  const [view, setView] = useState('carousel'); // 'carousel' | 'table'
+  const [tablePage, setTablePage] = useState(1);
+
+  // Default view: table on mobile, carousel on desktop
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.matchMedia('(max-width: 767px)').matches;
+      setView(isMobile ? 'table' : 'carousel');
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -83,6 +93,26 @@ export default function ConferencesPage() {
     if (!q) return rows;
     return rows.filter(r => (r.topic || '').toLowerCase().includes(q));
   }, [rows, search]);
+
+  // Sort filtered rows by date for table view
+  const sortedFilteredRows = useMemo(() => {
+    const arr = [...filteredRows];
+    arr.sort((a, b) => {
+      const da = parseDMY(a?.dateDMY)?.getTime() || 0;
+      const db = parseDMY(b?.dateDMY)?.getTime() || 0;
+      return asc ? (da - db) : (db - da);
+    });
+    return arr;
+  }, [filteredRows, asc]);
+
+  // Table pagination
+  const pageSize = 10;
+  const tableTotalPages = Math.max(1, Math.ceil(sortedFilteredRows.length / pageSize));
+  const tableStart = (tablePage - 1) * pageSize;
+  const tableItems = sortedFilteredRows.slice(tableStart, tableStart + pageSize);
+
+  // Reset table page when filters or sort change
+  useEffect(() => { setTablePage(1); }, [search, rows?.length, asc]);
 
   // Comparison stats (filtered)
   const stats = useMemo(() => {
@@ -177,7 +207,7 @@ const tvkItems = useMemo(() => filteredRows
           </div>
         </div>
 
-        {/* Search + Sort toolbar (like Issues/Protests) */}
+        {/* Search + Sort + View toolbar */}
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
           <div className="tile flex items-center gap-3">
             <input
@@ -193,14 +223,84 @@ const tvkItems = useMemo(() => filteredRows
             >
               Sort carousels: {asc ? 'Oldest → Newest' : 'Newest → Oldest'}
             </button>
+            <button
+              className="px-3 py-2 rounded-lg bg-gray-200/70 dark:bg-white/10"
+              onClick={() => setView(v => (v === 'carousel' ? 'table' : 'carousel'))}
+              title="Switch between Carousel and Table view"
+            >
+              View: {view === 'carousel' ? 'Carousel' : 'Table'}
+            </button>
           </div>
         </div>
 
-        {/* Carousels */}
-        <div className="mt-4 grid grid-cols-1 gap-4">
-          <Carousel title="NTK — Conferences" items={ntkItems} asc={asc} />
-          <Carousel title="TVK — Conferences" items={tvkItems} asc={asc} />
-        </div>
+        {/* Carousels or Table */}
+        {view === 'carousel' ? (
+          <div className="mt-4 grid grid-cols-1 gap-4">
+            <Carousel title="NTK — Conferences" items={ntkItems} asc={asc} />
+            <Carousel title="TVK — Conferences" items={tvkItems} asc={asc} />
+          </div>
+        ) : (
+          <div className="tile mt-4 overflow-auto">
+            <div className="flex items-center justify-between mb-2">
+              <div className="font-semibold">Conferences — Table View</div>
+              <div className="flex items-center gap-2">
+                <button
+                  className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10"
+                  disabled={tablePage <= 1}
+                  onClick={() => setTablePage(p => Math.max(1, p - 1))}
+                >
+                  Previous
+                </button>
+                <span className="text-sm">Page {tablePage} / {tableTotalPages}</span>
+                <button
+                  className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10"
+                  disabled={tablePage >= tableTotalPages}
+                  onClick={() => setTablePage(p => Math.min(tableTotalPages, p + 1))}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+            <table className="min-w-[620px] w-full">
+              <thead>
+                <tr className="text-left">
+                  <th className="p-3">Date</th>
+                  <th className="p-3">Event Name</th>
+                  <th className="p-3">Party</th>
+                  <th className="p-3">Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tableItems.map(r => (
+                  <tr key={r.id} className="border-t border-white/40 dark:border-white/5">
+                    <td className="p-3">{r.dateDMY}</td>
+                    <td className="p-3">{r.topic || r.dateDMY}</td>
+                    <td className="p-3">{r.party}</td>
+                    <td className="p-3">
+                      <button
+                        className="px-3 py-1 rounded-lg bg-indigo-500 text-white disabled:opacity-50"
+                        disabled={!r.ytUrl}
+                        onClick={() => {
+                          if (!r.ytUrl) return;
+                          if (confirm('Open external website?')) {
+                            window.open(r.ytUrl, '_blank', 'noopener,noreferrer');
+                          }
+                        }}
+                      >
+                        Open
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {tableItems.length === 0 && (
+                  <tr>
+                    <td className="p-3 opacity-70" colSpan={4}>No results</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Modals */}
         <Modal open={modalA} onClose={() => setModalA(false)} title="Conferences — Count">
