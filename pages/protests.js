@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import Navbar from '../components/Navbar';
 import DataTable from '../components/DataTable';
 import FilterSection from '../components/FilterSection';
-import Modal from '../components/Modal';
 import { MiniPie } from '../components/ChartsMini';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { parseDMY, isWithinRange, rangeFromPreset } from '../utils/date';
@@ -14,8 +13,6 @@ export default function ProtestsPage() {
   const [loading, setLoading] = useState(true);
   const [filtering, setFiltering] = useState(false);
   const [appliedLabel, setAppliedLabel] = useState(null);
-  const [openA, setOpenA] = useState(false);
-  const [openB, setOpenB] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -95,30 +92,12 @@ export default function ProtestsPage() {
         <Navbar />
         <div className="text-center mb-4">
           <h2 className="text-3xl font-bold">Protest & People Meet</h2>
-          <p className="opacity-80">YouTube-confirmed events. ✅ opens video, ❌ means none.</p>
+          <p className="opacity-80">A list of all protests or people meet surrounding a particular issue.</p>
         </div>
 
         <FilterSection onApply={applyFilter} onClear={clearFilter} disabled={loading} />
 
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="tile">
-            <div className="flex items-center justify-between mb-2">
-              <div className="font-semibold">NTK vs TVK (Events)</div>
-              <button className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10"
-                onClick={() => setOpenA(true)}>Expand</button>
-            </div>
-            <MiniPie data={pieTicks} />
-          </div>
-
-          <div className="tile">
-            <div className="flex items-center justify-between mb-2">
-              <div className="font-semibold">NTK vs TVK (Speech Minutes)</div>
-              <button className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10"
-                onClick={() => setOpenB(true)}>Expand</button>
-            </div>
-            <MiniPie data={pieSpeech} />
-          </div>
-        </div>
+        
 
         <div className="mt-4">
           <DataTable
@@ -126,17 +105,23 @@ export default function ProtestsPage() {
             rows={rows}
             searchableKey="issue"
             dateKey="dateDMY"
-            onNoteText="Note: ✅ emoji is clickable. Confirmation will appear before opening the video."
+            onNoteText="Note: ✅ emoji is clickable. Clicking that will take you to the source website."
             appliedLabel={appliedLabel}
           />
         </div>
 
-        <Modal open={openA} onClose={() => setOpenA(false)} title="Events — Full Size Chart">
-          <MiniPie data={pieTicks} />
-        </Modal>
-        <Modal open={openB} onClose={() => setOpenB(false)} title="Speech Minutes — Full Size Chart">
-          <MiniPie data={pieSpeech} />
-        </Modal>
+        {/* Charts moved to bottom */}
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="tile">
+            <MiniPie title="NTK vs TVK (Events)" data={pieTicks} compact />
+          </div>
+
+          <div className="tile">
+            <MiniPie title="NTK vs TVK (Speech Minutes)" data={pieSpeech} compact />
+          </div>
+        </div>
+
+        {/* Modals removed: charts are compact inline */}
       </main>
     </div>
   );

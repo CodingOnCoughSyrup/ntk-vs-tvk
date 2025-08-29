@@ -3,9 +3,8 @@ import Navbar from '../components/Navbar';
 import FilterSection from '../components/FilterSection';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { MiniPie } from '../components/ChartsMini';
-import Modal from '../components/Modal';
 import Carousel from '../components/Carousel';
-import { parseDMY, isWithinRange, rangeFromPreset } from '../utils/date';
+import { parseDMY, rangeFromPreset } from '../utils/date';
 
 export default function PressMeetsPage() {
   const [raw, setRaw] = useState([]);
@@ -14,19 +13,11 @@ export default function PressMeetsPage() {
   const [filtering, setFiltering] = useState(false);
   const [appliedLabel, setAppliedLabel] = useState(null);
   const [asc, setAsc] = useState(false);
-  const [modalA, setModalA] = useState(false);
-  const [modalB, setModalB] = useState(false);
   const [search, setSearch] = useState('');
+  const [party, setParty] = useState('both');
+  // Re-added view/table state (revert last cleanup)
   const [view, setView] = useState('carousel'); // 'carousel' | 'table'
   const [tablePage, setTablePage] = useState(1);
-
-  // Default to table on mobile, carousel on desktop
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isMobile = window.matchMedia('(max-width: 767px)').matches;
-      setView(isMobile ? 'table' : 'carousel');
-    }
-  }, []);
 
   useEffect(() => {
     let active = true;
@@ -50,10 +41,10 @@ export default function PressMeetsPage() {
 
     // If truly "Life Time", don't filter at all
     if ((!from && !to) && (!preset || preset === 'all')) {
-        setRows(raw || []);
-        setAppliedLabel('Showing: Life Time');
-        setTimeout(() => setFiltering(false), 120);
-        return;
+      setRows(raw || []);
+      setAppliedLabel('Showing: Life Time');
+      setTimeout(() => setFiltering(false), 120);
+      return;
     }
 
     let fromD = null, toD = null;
@@ -62,24 +53,23 @@ export default function PressMeetsPage() {
     if (!fromD && !toD) { const p = rangeFromPreset(preset || 'all'); fromD = p.start; toD = p.end; }
 
     const filtered = (raw || []).filter(r => {
-        const d = parseDMY(r.dateDMY);
-        // For preset/range filtering, ignore rows with invalid dates
-        return d ? ((!fromD || d >= fromD) && (!toD || d <= toD)) : false;
+      const d = parseDMY(r.dateDMY);
+      return d ? ((!fromD || d >= fromD) && (!toD || d <= toD)) : false;
     });
 
     let label = 'Showing: Life Time';
     if (fromD || toD) {
-        const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-        label = `Showing: ${fromD ? fmt(fromD) : '…'} → ${toD ? fmt(toD) : '…'}`;
+      const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+      label = `Showing: ${fromD ? fmt(fromD) : '--'} to ${toD ? fmt(toD) : '--'}`;
     } else if (preset && preset !== 'all') {
-        const map = { '1m':'Past month','3m':'Past 3 months','6m':'Past 6 months','1y':'Past year' };
-        label = `Showing: ${map[preset] || 'Life Time'}`;
-  }
+      const map = { '1m':'Past month','3m':'Past 3 months','6m':'Past 6 months','1y':'Past year' };
+      label = `Showing: ${map[preset] || 'Life Time'}`;
+    }
 
     setAppliedLabel(label);
     setRows(filtered);
     setTimeout(() => setFiltering(false), 120);
-    }
+  }
 
   function clearFilter() {
     setFiltering(true);
@@ -98,7 +88,7 @@ export default function PressMeetsPage() {
     ));
   }, [rows, search]);
 
-  // Sort filtered rows by date based on asc toggle (for table view)
+  // Re-added: sort for table view compatibility
   const sortedFilteredRows = useMemo(() => {
     const arr = [...filteredRows];
     arr.sort((a, b) => {
@@ -109,15 +99,12 @@ export default function PressMeetsPage() {
     return arr;
   }, [filteredRows, asc]);
 
-  // Table pagination
+  // Table pagination (kept for compatibility)
   const pageSize = 10;
   const tableTotalPages = Math.max(1, Math.ceil(sortedFilteredRows.length / pageSize));
   const tableStart = (tablePage - 1) * pageSize;
   const tableItems = sortedFilteredRows.slice(tableStart, tableStart + pageSize);
-
-  // Reset table page when filters or sort change
   useEffect(() => { setTablePage(1); }, [search, rows?.length, asc]);
-
 
   // Comparison stats (filtered)
   const stats = useMemo(() => {
@@ -129,22 +116,20 @@ export default function PressMeetsPage() {
     return init;
   }, [rows]);
 
-  // Carousels source
-  const ntkItems = useMemo(() => filteredRows.filter(r => r.party === 'NTK').map(r => ({
-    id: r.id,
-    dateDMY: r.dateDMY,
-    ytUrl: r.ytUrl,
-    label: r.dateDMY,
-    extra: `${r.duration} m`
-  })), [filteredRows]);
-
-  const tvkItems = useMemo(() => filteredRows.filter(r => r.party === 'TVK').map(r => ({
-    id: r.id,
-    dateDMY: r.dateDMY,
-    ytUrl: r.ytUrl,
-    label: r.dateDMY,
-    extra: `${r.duration} m`
-  })), [filteredRows]);
+  // Combined carousel source with party filter
+  const combinedItems = useMemo(() => {
+    let list = filteredRows;
+    if (party === 'NTK') list = list.filter(r => r.party === 'NTK');
+    else if (party === 'TVK') list = list.filter(r => r.party === 'TVK');
+    return list.map(r => ({
+      id: r.id,
+      dateDMY: r.dateDMY,
+      ytUrl: r.ytUrl,
+      label: r.dateDMY,
+      party: r.party,
+      extra: `${r.duration} m`
+    }));
+  }, [filteredRows, party]);
 
   const pieCounts = [
     { name: 'NTK', value: stats.NTK.count },
@@ -162,27 +147,63 @@ export default function PressMeetsPage() {
         <Navbar />
         <div className="text-center mb-4">
           <h2 className="text-3xl font-bold">Press Meets</h2>
-          <p className="opacity-80">Comparison → two carousels (NTK & TVK). Click a card to open the video.</p>
+          <p className="opacity-80">A list of all the press meets by a party and the total time they spoke</p>
         </div>
 
         <FilterSection onApply={applyFilter} onClear={clearFilter} disabled={loading} />
 
-        {/* Comparison Table */}
-        <div className="tile mt-4 overflow-auto">
-          <table className="min-w-[560px] w-full">
+        {/* Search + Sort toolbar (mobile wraps) */}
+        {/* Controls moved into carousel header */}
+
+        {/* Combined Carousel */}
+        <div className="mt-4 grid grid-cols-1 gap-4">
+          <Carousel
+            title={party === 'both' ? 'Press Meets - NTK & TVK' : `Press Meets - ${party}`}
+            items={combinedItems}
+            asc={asc}
+            headerExtras={(
+              <>
+                <input
+                  className="px-3 py-2 rounded-lg bg-white/70 dark:bg-white/10 w-36 md:w-64"
+                  placeholder="Search Press Meet..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+                <button
+                  className="px-3 py-2 rounded-lg bg-gray-200/70 dark:bg-white/10"
+                  onClick={() => setAsc(a => !a)}
+                  title="Toggle sorting order"
+                >
+                  Sort: {asc ? 'Oldest → Newest' : 'Newest → Oldest'}
+                </button>
+                <button
+                  className="px-3 py-2 rounded-lg bg-gray-200/70 dark:bg-white/10"
+                  onClick={() => setParty(p => (p === 'both' ? 'NTK' : p === 'NTK' ? 'TVK' : 'both'))}
+                  title="Cycle party filter"
+                >
+                  Party: {party}
+                </button>
+              </>
+            )}
+          />
+        </div>
+
+        {/* Comparison Table moved to bottom */}
+        <div className="tile mt-4 overflow-auto text-sm md:text-base">
+          <table className="w-full md:min-w-[560px]">
             <thead>
               <tr className="text-left">
-                <th className="p-3">Party</th>
-                <th className="p-3">No. of Press Meets</th>
-                <th className="p-3">Speech Duration (m)</th>
+                <th className="p-2 md:p-3">Party</th>
+                <th className="p-2 md:p-3">No. of Press Meets</th>
+                <th className="p-2 md:p-3">Speech Duration (m)</th>
               </tr>
             </thead>
             <tbody>
               {['NTK','TVK'].map(p => (
                 <tr key={p} className="border-t border-white/40 dark:border-white/5">
-                  <td className="p-3 font-semibold">{p}</td>
-                  <td className="p-3">{stats[p].count}</td>
-                  <td className="p-3">{stats[p].dur}</td>
+                  <td className="p-2 md:p-3 font-semibold">{p}</td>
+                  <td className="p-2 md:p-3">{stats[p].count}</td>
+                  <td className="p-2 md:p-3">{stats[p].dur}</td>
                 </tr>
               ))}
             </tbody>
@@ -190,124 +211,15 @@ export default function PressMeetsPage() {
           {appliedLabel && <div className="text-sm opacity-70 mt-2">{appliedLabel}</div>}
         </div>
 
-        {/* Charts (mini) */}
+        {/* Charts moved to bottom */}
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="tile">
-            <div className="flex items-center justify-between mb-2">
-              <div className="font-semibold">NTK vs TVK (Count)</div>
-              <button className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10" onClick={() => setModalA(true)}>Expand</button>
-            </div>
-            <MiniPie data={pieCounts} />
+            <MiniPie title="NTK vs TVK (Count)" data={pieCounts} compact />
           </div>
           <div className="tile">
-            <div className="flex items-center justify-between mb-2">
-              <div className="font-semibold">NTK vs TVK (Speech Minutes)</div>
-              <button className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10" onClick={() => setModalB(true)}>Expand</button>
-            </div>
-            <MiniPie data={pieDur} />
+            <MiniPie title="NTK vs TVK (Speech Minutes)" data={pieDur} compact />
           </div>
         </div>
-
-        {/* Search + Sort + View toolbar (aligned with Conferences) */}
-        <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
-          <div className="tile flex items-center gap-3">
-            <input
-              className="px-3 py-2 rounded-lg bg-white/70 dark:bg-white/10"
-              placeholder="Search Press Meet..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            <button
-              className="px-3 py-2 rounded-lg bg-gray-200/70 dark:bg-white/10"
-              onClick={() => setAsc(a => !a)}
-              title="Toggle sorting for carousels"
-            >
-              Sort carousels: {asc ? 'Oldest → Newest' : 'Newest → Oldest'}
-            </button>
-            <button
-              className="px-3 py-2 rounded-lg bg-gray-200/70 dark:bg-white/10"
-              onClick={() => setView(v => (v === 'carousel' ? 'table' : 'carousel'))}
-              title="Switch between Carousel and Table view"
-            >
-              View: {view === 'carousel' ? 'Carousel' : 'Table'}
-            </button>
-          </div>
-        </div>
-
-        {/* Carousels or Table */}
-        {view === 'carousel' ? (
-          <div className="mt-4 grid grid-cols-1 gap-4">
-            <Carousel title="NTK — Press Meets" items={ntkItems} asc={asc} />
-            <Carousel title="TVK — Press Meets" items={tvkItems} asc={asc} />
-          </div>
-        ) : (
-          <div className="tile mt-4 overflow-auto">
-            <div className="flex items-center justify-between mb-2">
-              <div className="font-semibold">Press Meets — Table View</div>
-              <div className="flex items-center gap-2">
-                <button
-                  className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10"
-                  disabled={tablePage <= 1}
-                  onClick={() => setTablePage(p => Math.max(1, p - 1))}
-                >
-                  Previous
-                </button>
-                <span className="text-sm">Page {tablePage} / {tableTotalPages}</span>
-                <button
-                  className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10"
-                  disabled={tablePage >= tableTotalPages}
-                  onClick={() => setTablePage(p => Math.min(tableTotalPages, p + 1))}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-            <table className="min-w-[480px] w-full">
-              <thead>
-                <tr className="text-left">
-                  <th className="p-3">Date</th>
-                  <th className="p-3">Party</th>
-                  <th className="p-3">Open</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tableItems.map(r => (
-                  <tr key={r.id} className="border-t border-white/40 dark:border-white/5">
-                    <td className="p-3">{r.dateDMY}</td>
-                    <td className="p-3">{r.party}</td>
-                    <td className="p-3">
-                      <button
-                        className="px-3 py-1 rounded-lg bg-indigo-500 text-white disabled:opacity-50"
-                        disabled={!r.ytUrl}
-                        onClick={() => {
-                          if (!r.ytUrl) return;
-                          if (confirm('Open external website?')) {
-                            window.open(r.ytUrl, '_blank', 'noopener,noreferrer');
-                          }
-                        }}
-                      >
-                        Open
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {tableItems.length === 0 && (
-                  <tr>
-                    <td className="p-3 opacity-70" colSpan={3}>No results</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Modals */}
-        <Modal open={modalA} onClose={() => setModalA(false)} title="Press Meets — Count">
-          <MiniPie data={pieCounts} />
-        </Modal>
-        <Modal open={modalB} onClose={() => setModalB(false)} title="Press Meets — Speech Minutes">
-          <MiniPie data={pieDur} />
-        </Modal>
       </main>
     </div>
   );

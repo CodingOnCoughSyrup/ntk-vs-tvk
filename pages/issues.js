@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import Navbar from '../components/Navbar';
 import DataTable from '../components/DataTable';
 import FilterSection from '../components/FilterSection';
-import Modal from '../components/Modal';
 import { MiniPie } from '../components/ChartsMini';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { parseDMY, isWithinRange, rangeFromPreset } from '../utils/date';
@@ -14,7 +13,6 @@ export default function IssuesPage() {
   const [loading, setLoading] = useState(true);
   const [filtering, setFiltering] = useState(false);
   const [appliedLabel, setAppliedLabel] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -89,21 +87,28 @@ export default function IssuesPage() {
         <Navbar />
         <div className="text-center mb-4">
           <h2 className="text-3xl font-bold">Issues Addressed</h2>
-          <p className="opacity-80">Table first, mini-charts second. Click ✅ to open posts (masked behind emoji).</p>
+          <p className="opacity-80">A list of all political issues and the party's respone to it</p>
         </div>
 
         <FilterSection onApply={applyFilter} onClear={clearFilter} disabled={loading} />
 
+        
+
+        <div className="mt-4">
+          <DataTable
+            kind="issues"
+            rows={rows}
+            searchableKey="issue"
+            dateKey="dateDMY"
+            onNoteText="Note: ✅ emoji is clickable. Clicking that will take you to the source website."
+            appliedLabel={appliedLabel}
+          />
+        </div>
+        {/* Charts + Quick View moved to bottom */}
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="tile">
-            <div className="flex items-center justify-between mb-2">
-              <div className="font-semibold">NTK vs TVK (Addressed)</div>
-              <button className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10"
-                onClick={() => setModalOpen(true)}>Expand</button>
-            </div>
-            <MiniPie data={pieData} />
+            <MiniPie title="NTK vs TVK (Addressed)" data={pieData} compact />
           </div>
-          
           <div className="tile">
             <div className="font-semibold mb-2">Quick View</div>
             <div className="overflow-x-auto">
@@ -125,23 +130,8 @@ export default function IssuesPage() {
               </table>
             </div>
           </div>
-
         </div>
-
-        <div className="mt-4">
-          <DataTable
-            kind="issues"
-            rows={rows}
-            searchableKey="issue"
-            dateKey="dateDMY"
-            onNoteText="Note: ✅ emoji is clickable. A confirmation pops before opening the external site."
-            appliedLabel={appliedLabel}
-          />
-        </div>
-
-        <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Issues — Full Size Chart">
-          <MiniPie data={pieData} />
-        </Modal>
+        {/* Modal removed: chart is compact inline */}
       </main>
     </div>
   );
