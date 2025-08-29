@@ -55,26 +55,26 @@ export default function Home() {
       />
 
       <main className="max-w-6xl mx-auto px-4 py-8 flex flex-col items-center">
-        <section className="text-center mt-8">
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-2 animate-float">
+        <section className="text-center mt-6 md:mt-8">
+          <h1 className="text-3xl md:text-6xl font-extrabold tracking-tight mb-2 animate-float">
             NTK vs TVK - A Detailed Comparison
           </h1>
-          <p className="opacity-80 text-lg">
+          <p className="opacity-80 text-base md:text-lg">
             Whom to vote for? Decide for yourself from facts and data.
           </p>
 
-          {/* Buttons */}
-          <div className="flex flex-wrap gap-3 justify-center mt-6">
-            <Link href="/issues" className="tile px-4 py-3 hover:opacity-90">Issues Addressed</Link>
-            <Link href="/protests" className="tile px-4 py-3 hover:opacity-90">Protest & People Meet</Link>
-            <Link href="/press-meets" className="tile px-4 py-3 hover:opacity-90">Press Meets</Link>
-            <Link href="/conferences" className="tile px-4 py-3 hover:opacity-90">Conferences</Link>
+          {/* Primary navigation buttons (prominent on all screens) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mt-6 w-full max-w-2xl mx-auto">
+            <Link href="/issues" className="tile w-full text-center px-5 py-4 md:px-6 md:py-5 text-lg md:text-xl font-semibold hover:opacity-90">Issues Addressed</Link>
+            <Link href="/protests" className="tile w-full text-center px-5 py-4 md:px-6 md:py-5 text-lg md:text-xl font-semibold hover:opacity-90">Protest & People Meet</Link>
+            <Link href="/press-meets" className="tile w-full text-center px-5 py-4 md:px-6 md:py-5 text-lg md:text-xl font-semibold hover:opacity-90">Press Meets</Link>
+            <Link href="/conferences" className="tile w-full text-center px-5 py-4 md:px-6 md:py-5 text-lg md:text-xl font-semibold hover:opacity-90">Conferences</Link>
           </div>
         </section>
 
         {/* Tiles / Boxes */}
-        <section className="w-full mt-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <section className="w-full mt-6 md:mt-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
             <TileCard
               icon="📌"
               title="Total Issues"
@@ -131,16 +131,16 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-3 text-sm opacity-80">{note}</div>
+          <div className="mt-3 text-xs md:text-sm opacity-80">{note}</div>
         </section>
 
         {/* Quotes */}
-        <section className="w-full grid md:grid-cols-2 gap-4 mt-8">
-          <blockquote className="tile italic text-lg">
+        <section className="w-full grid md:grid-cols-2 gap-3 md:gap-4 mt-6 md:mt-8 mb-32 md:mb-40">
+          <blockquote className="tile italic text-base md:text-lg">
             “Only mass action can bring about change. The courts, the laws, and the government are instruments of those in power — it is the people in struggle who force them to act.”<br />
             <span className="not-italic text-sm opacity-70">— Nelson Mandela</span>
           </blockquote>
-          <blockquote className="tile italic text-lg">
+          <blockquote className="tile italic text-base md:text-lg">
             “A party that protests is alive with the people, forcing change in the streets today. A party that only files court cases is buying time, trapped in papers and procedures that stretch for years. Protest shakes the system now; courtrooms delay and distract.”<br />
             <span className="not-italic text-sm opacity-70">— Anonymous</span>
           </blockquote>
@@ -149,3 +149,6 @@ export default function Home() {
     </div>
   );
 }
+
+
+
