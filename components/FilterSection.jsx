@@ -1,0 +1,39 @@
+import { useEffect, useState } from 'react';
+import FilterBar from './FilterBar';
+
+/**
+ * Responsive wrapper for the date FilterBar.
+ * - Mobile (< md): collapsed by default, toggled by a small Filter button.
+ * - Desktop (>= md): expanded by default, can be hidden via the same button.
+ */
+export default function FilterSection({ onApply, onClear, disabled }) {
+  const [open, setOpen] = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.matchMedia('(max-width: 767px)').matches;
+      setOpen(!isMobile); // desktop: open, mobile: closed
+    }
+  }, []);
+
+  return (
+    <section>
+      <div className="flex items-center justify-end">
+        <button
+          className="tile px-3 py-2 hover:opacity-90"
+          aria-expanded={open ? 'true' : 'false'}
+          onClick={() => setOpen(o => !o)}
+          title={open ? 'Hide filters' : 'Show filters'}
+        >
+          {open ? 'Hide Filter' : 'Show Filter'}
+        </button>
+      </div>
+      {open && (
+        <div className="mt-2">
+          <FilterBar onApply={onApply} onClear={onClear} disabled={disabled} />
+        </div>
+      )}
+    </section>
+  );
+}
+

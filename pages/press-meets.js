@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Navbar from '../components/Navbar';
-import FilterBar from '../components/FilterBar';
+import FilterSection from '../components/FilterSection';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { MiniPie } from '../components/ChartsMini';
 import Modal from '../components/Modal';
@@ -165,7 +165,7 @@ export default function PressMeetsPage() {
           <p className="opacity-80">Comparison → two carousels (NTK & TVK). Click a card to open the video.</p>
         </div>
 
-        <FilterBar onApply={applyFilter} onClear={clearFilter} disabled={loading} />
+        <FilterSection onApply={applyFilter} onClear={clearFilter} disabled={loading} />
 
         {/* Comparison Table */}
         <div className="tile mt-4 overflow-auto">

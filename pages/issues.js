@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Navbar from '../components/Navbar';
 import DataTable from '../components/DataTable';
-import FilterBar from '../components/FilterBar';
+import FilterSection from '../components/FilterSection';
 import Modal from '../components/Modal';
 import { MiniPie } from '../components/ChartsMini';
 import LoadingOverlay from '../components/LoadingOverlay';
@@ -92,7 +92,7 @@ export default function IssuesPage() {
           <p className="opacity-80">Table first, mini-charts second. Click ✅ to open posts (masked behind emoji).</p>
         </div>
 
-        <FilterBar onApply={applyFilter} onClear={clearFilter} disabled={loading} />
+        <FilterSection onApply={applyFilter} onClear={clearFilter} disabled={loading} />
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="tile">
