@@ -23,7 +23,7 @@ export default function Home() {
     return () => { active = false; };
   }, []);
 
-  const note = 'Note: All data shown is from November 1, 2024 onward - not the entire lifetime.';
+  const note = 'Note: All data shown is from November 1, 2024 onward (TVKs first conference) - not the entire lifetime to have a fair comparison';
 
   const issuesPie = totals ? (
     (typeof totals?.issues?.both === 'number')
@@ -86,6 +86,12 @@ export default function Home() {
         </section>
 
         <section className="w-full mt-6 md:mt-8">
+          <div className="w-full max-w-2xl mx-auto mb-4">
+            <div className="rounded-lg border border-amber-400 bg-amber-50 dark:bg-amber-900/30 text-amber-900 dark:text-amber-100 px-4 py-3 flex items-start gap-2 shadow-sm" role="note">
+              <span className="text-lg" aria-hidden>⚠️</span>
+              <p className="text-sm md:text-base">{note}</p>
+            </div>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
             <TileCard
               icon="📌"
@@ -104,7 +110,7 @@ export default function Home() {
               compact
             />
             <TileCard
-              icon="🗞️"
+              icon="🎙️"
               title="Total Press Meets"
               bigNumber={totals?.press?.total ?? 0}
               subText="Press meets logged"
@@ -112,7 +118,7 @@ export default function Home() {
               compact
             />
             <TileCard
-              icon="🎤"
+              icon="🏛️"
               title="Total Conferences"
               bigNumber={totals?.conference?.total ?? 0}
               subText="Conferences logged"
@@ -137,7 +143,19 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-3 text-xs md:text-sm opacity-80">{note}</div>
+          
+        </section>
+
+        {/* Quotes */}
+        <section className="w-full grid md:grid-cols-2 gap-3 md:gap-4 mt-6 md:mt-8 mb-32 md:mb-40">
+          <blockquote className="tile italic text-base md:text-lg">
+            &ldquo;Only mass action can bring about change. The courts, the laws, and the government are instruments of those in power &mdash; it is the people in struggle who force them to act.&rdquo;<br />
+            <span className="not-italic text-sm opacity-70">&mdash; Nelson Mandela</span>
+          </blockquote>
+          <blockquote className="tile italic text-base md:text-lg">
+            &ldquo;A party that protests is alive with the people, forcing change in the streets today. A party that only files court cases is buying time, trapped in papers and procedures that stretch for years. Protest shakes the system now; courtrooms delay and distract.&rdquo;<br />
+            <span className="not-italic text-sm opacity-70">&mdash; Anonymous</span>
+          </blockquote>
         </section>
       </main>
     </div>
