@@ -105,7 +105,7 @@ export default function Home() {
               icon="✊"
               title="Total Protests"
               bigNumber={totals?.protests?.total ?? 0}
-              subText="Confirmed with video evidence"
+              subText="How many protests held?"
               pieData={protestsPie}
               compact
             />
@@ -113,7 +113,7 @@ export default function Home() {
               icon="🎙️"
               title="Total Press Meets"
               bigNumber={totals?.press?.total ?? 0}
-              subText="Press meets logged"
+              subText="Answering media questions"
               pieData={pressPie}
               compact
             />
@@ -121,7 +121,7 @@ export default function Home() {
               icon="🏛️"
               title="Total Conferences"
               bigNumber={totals?.conference?.total ?? 0}
-              subText="Conferences logged"
+              subText="Conferences on various issues"
               pieData={confPie}
               compact
             />
