@@ -23,7 +23,7 @@ export default function Home() {
     return () => { active = false; };
   }, []);
 
-  const note = 'Note: All data shown is from November 1, 2024 onward (after TVKs first conference) - not the entire lifetime to have a fair comparison';
+  const note = "Note: All data shown is from November 1, 2024 onward (Post TVK's first conference in 2024) — not the entire lifetime, to have a fair comparison.";
 
   const issuesPie = totals ? (
     (typeof totals?.issues?.both === 'number')
