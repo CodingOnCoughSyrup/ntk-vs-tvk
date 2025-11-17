@@ -8,7 +8,7 @@ const DEFAULT_TITLE = 'NTK vs TVK - A Detailed Comparison';
 const DEFAULT_DESCRIPTION = 'Compare NTK and TVK using facts and data.';
 const SITE_NAME = 'NTK vs TVK';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-const OG_IMAGE = '/default.jpg'; // put this file in /public
+const OG_IMAGE = '/default.png'; // put this file in /public
 
 export default function MyApp({ Component, pageProps }) {
   const router = useRouter();
