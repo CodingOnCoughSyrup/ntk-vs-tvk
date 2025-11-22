@@ -6,6 +6,7 @@ import FilterSection from '../components/FilterSection';
 import { MiniPie } from '../components/ChartsMini';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { parseDMY, isWithinRange, rangeFromPreset } from '../utils/date';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function ProtestsPage() {
   const [raw, setRaw] = useState([]);
@@ -13,6 +14,7 @@ export default function ProtestsPage() {
   const [loading, setLoading] = useState(true);
   const [filtering, setFiltering] = useState(false);
   const [appliedLabel, setAppliedLabel] = useState(null);
+  const { language, t } = useLanguage();
 
   useEffect(() => {
     let active = true;
@@ -31,12 +33,21 @@ export default function ProtestsPage() {
     return () => { active = false; };
   }, []);
 
+  // Translate rows based on language
+  const displayRows = useMemo(() => {
+    if (language === 'en') return rows;
+    return rows.map(r => ({
+      ...r,
+      issue: r.issue_ta || r.issue // fallback
+    }));
+  }, [rows, language]);
+
   function applyFilter({ preset, from, to }) {
     setFiltering(true);
 
     let fromD = null, toD = null;
     if (from) { const d = new Date(from); fromD = new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
-    if (to)   { const d = new Date(to);   toD   = new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+    if (to) { const d = new Date(to); toD = new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 
     if (!fromD && !toD) {
       const p = rangeFromPreset(preset || 'all');
@@ -48,13 +59,18 @@ export default function ProtestsPage() {
       return isWithinRange(d, fromD, toD);
     });
 
-    let label = 'Showing: Life Time';
+    let label = `${t.common.showing}: ${t.common.lifeTime}`;
     if (fromD || toD) {
-      const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-      label = `Showing: ${fromD ? fmt(fromD) : '--'} to ${toD ? fmt(toD) : '--'}`;
+      const fmt = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      label = `${t.common.showing}: ${fromD ? fmt(fromD) : '--'} to ${toD ? fmt(toD) : '--'}`;
     } else if (preset && preset !== 'all') {
-      const map = { '1m':'Past month','3m':'Past 3 months','6m':'Past 6 months','1y':'Past year' };
-      label = `Showing: ${map[preset] || 'Life Time'}`;
+      const map = {
+        '1m': t.filter.presets.m1,
+        '3m': t.filter.presets.m3,
+        '6m': t.filter.presets.m6,
+        '1y': t.filter.presets.y1
+      };
+      label = `${t.common.showing}: ${map[preset] || t.common.lifeTime}`;
     }
 
     setAppliedLabel(label);
@@ -90,13 +106,13 @@ export default function ProtestsPage() {
   }, [rows]);
 
   const pieTicks = [
-    { name: 'NTK Only', value: categoryCounts.ntkOnly },
-    { name: 'TVK Only', value: categoryCounts.tvkOnly },
-    { name: 'Both', value: categoryCounts.both }
+    { name: t.charts.ntkOnly, value: categoryCounts.ntkOnly },
+    { name: t.charts.tvkOnly, value: categoryCounts.tvkOnly },
+    { name: t.charts.both, value: categoryCounts.both }
   ];
   const pieSpeech = [
-    { name: 'NTK', value: counts.ntkSpeech },
-    { name: 'TVK', value: counts.tvkSpeech }
+    { name: t.charts.ntk, value: counts.ntkSpeech },
+    { name: t.charts.tvk, value: counts.tvkSpeech }
   ];
 
   return (
@@ -105,18 +121,18 @@ export default function ProtestsPage() {
       <main className="max-w-6xl mx-auto px-4 py-8">
         <Navbar />
         <div className="text-center mb-4">
-          <h2 className="text-3xl font-bold">Protest & People Meet</h2>
-          <p className="opacity-80">A list of all protests or people meet surrounding a particular issue.</p>
+          <h2 className="text-3xl font-bold">{t.cards.protests.title}</h2>
+          <p className="opacity-80">{t.cards.protests.sub}</p>
         </div>
 
         <FilterSection onApply={applyFilter} onClear={clearFilter} disabled={loading} />
 
-        
+
 
         <div className="mt-4">
           <DataTable
             kind="protests"
-            rows={rows}
+            rows={displayRows}
             searchableKey="issue"
             dateKey="dateDMY"
             onNoteText="Note: ✅ emoji is clickable. Clicking that will take you to the source website."
@@ -127,11 +143,11 @@ export default function ProtestsPage() {
         {/* Charts moved to bottom */}
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="tile">
-            <MiniPie title="Events: NTK Only / TVK Only / Both" data={pieTicks} compact />
+            <MiniPie title={t.titles.protestsPie} data={pieTicks} compact />
           </div>
 
           <div className="tile">
-            <MiniPie title="NTK vs TVK (Speech Minutes)" data={pieSpeech} compact />
+            <MiniPie title={t.titles.speechPie} data={pieSpeech} compact />
           </div>
         </div>
 

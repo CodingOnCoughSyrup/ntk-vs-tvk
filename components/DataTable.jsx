@@ -1,6 +1,7 @@
 // components/DataTable.jsx
 import { useEffect, useMemo, useState } from 'react';
 import { parseDMY } from '../utils/date';
+import { useLanguage } from '../context/LanguageContext';
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -19,6 +20,7 @@ export default function DataTable({
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   // Party filter for issues/protests: 'both' | 'ntk-only' | 'tvk-only'
   const [party, setParty] = useState('both');
+  const { t } = useLanguage();
 
   // Responsive page size: smaller on mobile
   useEffect(() => {
@@ -70,8 +72,8 @@ export default function DataTable({
   useEffect(() => { setPage(1); }, [pageSize, rows?.length, sortDesc]);
 
   function openMaybe(url, hasItem) {
-    if (!hasItem || !url) return alert('No posts regarding this.');
-    const ok = confirm('Open external website?');
+    if (!hasItem || !url) return alert(t.table.noPosts);
+    const ok = confirm(t.table.openExternal);
     if (ok) window.open(url, '_blank', 'noopener,noreferrer');
   }
 
@@ -81,13 +83,13 @@ export default function DataTable({
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
           <input
             className="px-3 py-2 rounded-lg bg-white/70 dark:bg-white/10 w-36 md:w-64"
-            placeholder={`Search ${kind === 'issues' ? 'Issue' : 'Protest'}...`}
+            placeholder={`${t.table.search}...`}
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
           />
           <button className="px-3 py-2 rounded-lg bg-gray-200/70 dark:bg-white/10"
-                  onClick={() => setSortDesc(s => !s)}>
-            Sort: {sortDesc ? 'Newest → Oldest' : 'Oldest → Newest'}
+            onClick={() => setSortDesc(s => !s)}>
+            {t.table.sort}: {sortDesc ? t.table.newestOldest : t.table.oldestNewest}
           </button>
           {(kind === 'issues' || kind === 'protests') && (
             <button
@@ -95,7 +97,7 @@ export default function DataTable({
               onClick={() => setParty(p => (p === 'both' ? 'ntk-only' : p === 'ntk-only' ? 'tvk-only' : 'both'))}
               title="Toggle party filter"
             >
-              Party: {party === 'both' ? 'Both' : party === 'ntk-only' ? 'NTK only' : 'TVK only'}
+              {t.table.party}: {party === 'both' ? t.table.both : party === 'ntk-only' ? t.table.ntkOnly : t.table.tvkOnly}
             </button>
           )}
         </div>
@@ -107,11 +109,11 @@ export default function DataTable({
 
       {/* Note moved to top, below controls */}
       {onNoteText && (
-        <div className="mt-2 text-sm opacity-70">{onNoteText}</div>
+        <div className="mt-2 text-sm opacity-70">{t.table.note}</div>
       )}
 
       {searched.length === 0 && (
-        <div className="tile mt-3 text-sm">Nothing is found in the specified range.</div>
+        <div className="tile mt-3 text-sm">{t.table.nothingFound}</div>
       )}
 
       <div className="overflow-auto mt-3">
@@ -120,17 +122,17 @@ export default function DataTable({
             <tr className="text-left">
               {kind === 'issues' ? (
                 <>
-                  <th className="p-2 md:p-3">Date</th>
-                  <th className="p-2 md:p-3">Issue Name</th>
-                  <th className="p-2 md:p-3">NTK</th>
-                  <th className="p-2 md:p-3">TVK</th>
+                  <th className="p-2 md:p-3">{t.table.date}</th>
+                  <th className="p-2 md:p-3">{t.table.issueName}</th>
+                  <th className="p-2 md:p-3">{t.charts.ntk}</th>
+                  <th className="p-2 md:p-3">{t.charts.tvk}</th>
                 </>
               ) : (
                 <>
-                  <th className="p-2 md:p-3">Date</th>
-                  <th className="p-2 md:p-3">Issue Name</th>
-                  <th className="p-2 md:p-3 text-center">NTK</th>
-                  <th className="p-2 md:p-3 text-center">TVK</th>
+                  <th className="p-2 md:p-3">{t.table.date}</th>
+                  <th className="p-2 md:p-3">{t.table.issueName}</th>
+                  <th className="p-2 md:p-3 text-center">{t.charts.ntk}</th>
+                  <th className="p-2 md:p-3 text-center">{t.charts.tvk}</th>
                 </>
               )}
             </tr>
@@ -150,11 +152,11 @@ export default function DataTable({
                       <td className="p-2 md:p-3"><div className="text-base md:text-lg whitespace-normal break-words flex flex-wrap items-center gap-2"><span className="inline-block">{r.issue}</span>{r.type && (<span className="px-2 py-0.5 rounded-full text-[11px] md:text-xs bg-indigo-100 dark:bg-indigo-900/40">{r.type}</span>)}</div></td>
                       <td className="p-2 md:p-3">
                         <a className="emoji-link no-underline text-xl md:text-2xl"
-                           onClick={() => openMaybe(r.ntkUrl, hasNtk)} role="button"> {ntkEmoji} </a>
+                          onClick={() => openMaybe(r.ntkUrl, hasNtk)} role="button"> {ntkEmoji} </a>
                       </td>
                       <td className="p-2 md:p-3">
                         <a className="emoji-link no-underline text-xl md:text-2xl"
-                           onClick={() => openMaybe(r.tvkUrl, hasTvk)} role="button"> {tvkEmoji} </a>
+                          onClick={() => openMaybe(r.tvkUrl, hasTvk)} role="button"> {tvkEmoji} </a>
                       </td>
                     </>
                   ) : (
@@ -169,14 +171,14 @@ export default function DataTable({
                       <td className="p-2 md:p-3">
                         <div className="flex flex-col items-center md:flex-row md:items-center gap-1 md:gap-2">
                           <a className="emoji-link no-underline text-xl md:text-2xl"
-                             onClick={() => openMaybe(r.ntkUrl, hasNtk)} role="button"> {ntkEmoji} </a>
+                            onClick={() => openMaybe(r.ntkUrl, hasNtk)} role="button"> {ntkEmoji} </a>
                           <span className="opacity-70 text-xs md:text-sm">({r.ntkSpeech || 0} min)</span>
                         </div>
                       </td>
                       <td className="p-2 md:p-3">
                         <div className="flex flex-col items-center md:flex-row md:items-center gap-1 md:gap-2">
                           <a className="emoji-link no-underline text-xl md:text-2xl"
-                             onClick={() => openMaybe(r.tvkUrl, hasTvk)} role="button"> {tvkEmoji} </a>
+                            onClick={() => openMaybe(r.tvkUrl, hasTvk)} role="button"> {tvkEmoji} </a>
                           <span className="opacity-70 text-xs md:text-sm">({r.tvkSpeech || 0} min)</span>
                         </div>
                       </td>
@@ -192,10 +194,10 @@ export default function DataTable({
       {searched.length > 0 && (
         <div className="mt-3 flex items-center justify-end gap-2">
           <button disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}
-            className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10">Previous</button>
-          <span className="text-sm">Page {page} / {totalPages}</span>
+            className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10">{t.table.previous}</button>
+          <span className="text-sm">{t.table.page} {page} / {totalPages}</span>
           <button disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10">Next</button>
+            className="px-3 py-1 rounded-lg bg-gray-200/70 dark:bg-white/10">{t.table.next}</button>
         </div>
       )}
     </div>

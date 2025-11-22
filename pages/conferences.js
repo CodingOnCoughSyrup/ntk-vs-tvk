@@ -1,3 +1,4 @@
+// pages/conferences.js
 import { useEffect, useMemo, useState } from 'react';
 import Navbar from '../components/Navbar';
 import FilterSection from '../components/FilterSection';
@@ -5,6 +6,7 @@ import LoadingOverlay from '../components/LoadingOverlay';
 import { MiniPie } from '../components/ChartsMini';
 import Carousel from '../components/Carousel';
 import { parseDMY, isWithinRange, rangeFromPreset } from '../utils/date';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function ConferencesPage() {
   const [raw, setRaw] = useState([]);
@@ -17,6 +19,7 @@ export default function ConferencesPage() {
   const [search, setSearch] = useState('');
   const [view, setView] = useState('carousel'); // re-added for compatibility
   const [tablePage, setTablePage] = useState(1);
+  const { language, t } = useLanguage();
 
   // Table view removed; always use carousel
 
@@ -37,41 +40,55 @@ export default function ConferencesPage() {
     return () => { active = false; };
   }, []);
 
+  // Translate rows based on language
+  const displayRows = useMemo(() => {
+    if (language === 'en') return rows;
+    return rows.map(r => ({
+      ...r,
+      topic: r.topic_ta || r.topic // fallback
+    }));
+  }, [rows, language]);
+
   function applyFilter({ preset, from, to }) {
     setFiltering(true);
 
     // If truly "Life Time", don't filter at all
     if ((!from && !to) && (!preset || preset === 'all')) {
-        setRows(raw || []);
-        setAppliedLabel('Showing: Life Time');
-        setTimeout(() => setFiltering(false), 120);
-        return;
+      setRows(raw || []);
+      setAppliedLabel('Showing: Life Time');
+      setTimeout(() => setFiltering(false), 120);
+      return;
     }
 
     let fromD = null, toD = null;
     if (from) { const d = new Date(from); fromD = new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
-    if (to)   { const d = new Date(to);   toD   = new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+    if (to) { const d = new Date(to); toD = new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
     if (!fromD && !toD) { const p = rangeFromPreset(preset || 'all'); fromD = p.start; toD = p.end; }
 
     const filtered = (raw || []).filter(r => {
-        const d = parseDMY(r.dateDMY);
-        // For preset/range filtering, ignore rows with invalid dates
-        return d ? ((!fromD || d >= fromD) && (!toD || d <= toD)) : false;
+      const d = parseDMY(r.dateDMY);
+      // For preset/range filtering, ignore rows with invalid dates
+      return d ? ((!fromD || d >= fromD) && (!toD || d <= toD)) : false;
     });
 
-    let label = 'Showing: Life Time';
+    let label = `${t.common.showing}: ${t.common.lifeTime}`;
     if (fromD || toD) {
-        const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-        label = `Showing: ${fromD ? fmt(fromD) : '…'} → ${toD ? fmt(toD) : '…'}`;
+      const fmt = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      label = `${t.common.showing}: ${fromD ? fmt(fromD) : '…'} → ${toD ? fmt(toD) : '…'}`;
     } else if (preset && preset !== 'all') {
-        const map = { '1m':'Past month','3m':'Past 3 months','6m':'Past 6 months','1y':'Past year' };
-        label = `Showing: ${map[preset] || 'Life Time'}`;
-  }
+      const map = {
+        '1m': t.filter.presets.m1,
+        '3m': t.filter.presets.m3,
+        '6m': t.filter.presets.m6,
+        '1y': t.filter.presets.y1
+      };
+      label = `${t.common.showing}: ${map[preset] || t.common.lifeTime}`;
+    }
 
     setAppliedLabel(label);
     setRows(filtered);
     setTimeout(() => setFiltering(false), 120);
-    }
+  }
 
   function clearFilter() {
     setFiltering(true);
@@ -82,9 +99,9 @@ export default function ConferencesPage() {
 
   const filteredRows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter(r => (r.topic || '').toLowerCase().includes(q));
-  }, [rows, search]);
+    if (!q) return displayRows;
+    return displayRows.filter(r => (r.topic || '').toLowerCase().includes(q));
+  }, [displayRows, search]);
 
   // Re-added: sort for (removed) table view compatibility
   const sortedFilteredRows = useMemo(() => {
@@ -130,12 +147,12 @@ export default function ConferencesPage() {
   }, [filteredRows, party]);
 
   const pieCounts = [
-    { name: 'NTK', value: stats.NTK.count },
-    { name: 'TVK', value: stats.TVK.count }
+    { name: t.charts.ntk, value: stats.NTK.count },
+    { name: t.charts.tvk, value: stats.TVK.count }
   ];
   const pieDur = [
-    { name: 'NTK', value: stats.NTK.dur },
-    { name: 'TVK', value: stats.TVK.dur }
+    { name: t.charts.ntk, value: stats.NTK.dur },
+    { name: t.charts.tvk, value: stats.TVK.dur }
   ];
 
   return (
@@ -144,15 +161,15 @@ export default function ConferencesPage() {
       <main className="max-w-6xl mx-auto px-4 py-8">
         <Navbar />
         <div className="text-center mb-4">
-          <h2 className="text-3xl font-bold">Conferences</h2>
-          <p className="opacity-80">A list of all political conferences, the topic discussed and the amount of time spoken.</p>
+          <h2 className="text-3xl font-bold">{t.cards.conferences.title}</h2>
+          <p className="opacity-80">{t.cards.conferences.sub}</p>
         </div>
 
         <FilterSection onApply={applyFilter} onClear={clearFilter} disabled={loading} />
 
-        
 
-        
+
+
 
         {/* Search + Sort + View toolbar (mobile wraps) */}
         {/* Controls moved into carousel header */}
@@ -160,14 +177,14 @@ export default function ConferencesPage() {
         {/* Combined Carousel */}
         <div className="mt-4 grid grid-cols-1 gap-4">
           <Carousel
-            title={party === 'both' ? 'Conferences — NTK & TVK' : `Conferences — ${party}`}
+            title={party === 'both' ? `${t.nav.conferences} — ${t.charts.ntk} & ${t.charts.tvk}` : `${t.nav.conferences} — ${party === 'NTK' ? t.charts.ntk : t.charts.tvk}`}
             items={combinedItems}
             asc={asc}
             headerExtras={(
               <>
                 <input
                   className="px-3 py-2 rounded-lg bg-white/70 dark:bg-white/10 w-36 md:w-64"
-                  placeholder="Search Conference..."
+                  placeholder={`${t.table.search} ${t.nav.conferences}...`}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                 />
@@ -176,14 +193,14 @@ export default function ConferencesPage() {
                   onClick={() => setAsc(a => !a)}
                   title="Toggle sorting order"
                 >
-                  Sort: {asc ? 'Oldest → Newest' : 'Newest → Oldest'}
+                  {t.table.sort}: {asc ? t.table.oldestNewest : t.table.newestOldest}
                 </button>
                 <button
                   className="px-3 py-2 rounded-lg bg-gray-200/70 dark:bg-white/10"
                   onClick={() => setParty(p => (p === 'both' ? 'NTK' : p === 'NTK' ? 'TVK' : 'both'))}
                   title="Cycle party filter"
                 >
-                  Party: {party}
+                  {t.table.party}: {party === 'both' ? t.table.both : party}
                 </button>
               </>
             )}
@@ -195,15 +212,15 @@ export default function ConferencesPage() {
           <table className="w-full md:min-w-[620px]">
             <thead>
               <tr className="text-left">
-                <th className="p-2 md:p-3">Party</th>
-                <th className="p-2 md:p-3">No. of Conferences</th>
-                <th className="p-2 md:p-3">Speech Duration (m)</th>
+                <th className="p-2 md:p-3">{t.table.party}</th>
+                <th className="p-2 md:p-3">{t.cards.conferences.title}</th>
+                <th className="p-2 md:p-3">{t.cards.speech.title}</th>
               </tr>
             </thead>
             <tbody>
-              {['NTK','TVK'].map(p => (
+              {['NTK', 'TVK'].map(p => (
                 <tr key={p} className="border-t border-white/40 dark:border-white/5">
-                  <td className="p-2 md:p-3 font-semibold">{p}</td>
+                  <td className="p-2 md:p-3 font-semibold">{p === 'NTK' ? t.charts.ntk : t.charts.tvk}</td>
                   <td className="p-2 md:p-3">{stats[p].count}</td>
                   <td className="p-2 md:p-3">{stats[p].dur}</td>
                 </tr>
@@ -216,10 +233,10 @@ export default function ConferencesPage() {
         {/* Charts moved to bottom */}
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="tile">
-            <MiniPie title="NTK vs TVK (Count)" data={pieCounts} compact />
+            <MiniPie title={t.titles.countPie} data={pieCounts} compact />
           </div>
           <div className="tile">
-            <MiniPie title="NTK vs TVK (Speech Minutes)" data={pieDur} compact />
+            <MiniPie title={t.titles.speechPie} data={pieDur} compact />
           </div>
         </div>
         {/* Modals removed: charts are compact inline */}

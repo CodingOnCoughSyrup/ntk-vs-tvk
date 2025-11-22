@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -14,11 +16,11 @@ export default function Navbar() {
   }, []);
 
   const links = [
-    { href: '/', label: 'Home' },
-    { href: '/issues', label: 'Issues Addressed' },
-    { href: '/protests', label: 'Protest & People Meet' },
-    { href: '/press-meets', label: 'Press Meets' },
-    { href: '/conferences', label: 'Conferences' },
+    { href: '/', label: t.nav.home },
+    { href: '/issues', label: t.nav.issues },
+    { href: '/protests', label: t.nav.protests },
+    { href: '/press-meets', label: t.nav.press },
+    { href: '/conferences', label: t.nav.conferences },
   ];
 
   return (
@@ -38,7 +40,7 @@ export default function Navbar() {
         {/* Mobile navbar with hamburger */}
         <div className="md:hidden">
           <div className="tile flex items-center justify-between">
-            <div className="font-semibold">Menu</div>
+            <div className="font-semibold">{t.nav.menu}</div>
             <button
               className="px-3 py-2 rounded-lg bg-gray-200/70 dark:bg-white/10"
               aria-controls="mobile-nav"
